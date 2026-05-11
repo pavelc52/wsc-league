@@ -687,7 +687,12 @@ nameInput.addEventListener('input', () => {
   }
   const exactMatch = VALID_NAMES.find(n => n.toLowerCase() === val.toLowerCase());
   nameNextBtn.disabled = !exactMatch;
+  if (exactMatch) currentName = exactMatch;
   returningBadge.style.display = 'none';
+});
+
+nameInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !nameNextBtn.disabled) nameNextBtn.click();
 });
 
 document.addEventListener('click', e => {
