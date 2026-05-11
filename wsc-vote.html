@@ -705,13 +705,19 @@ function selectName(name) {
 async function checkReturning(name) {
   if (SHEET_URL === "PASTE_YOUR_APPS_SCRIPT_URL_HERE") return;
   try {
-    const res = await fetch(`${SHEET_URL}?action=get&name=${encodeURIComponent(name)}`);
-    const data = await res.json();
-    if (data && data.team) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    const res = await fetch(`${SHEET_URL}?action=get&name=${encodeURIComponent(name)}`, { signal: controller.signal });
+    clearTimeout(timeout);
+    const text = await res.text();
+    const data = JSON.parse(text);
+    if (data && data.team && data.team.length > 0 && data.team[0] !== "") {
       selections = data;
       returningBadge.style.display = 'inline';
     }
-  } catch(e) {}
+  } catch(e) {
+    // Silently fail — user can still vote fresh
+  }
 }
 
 nameNextBtn.addEventListener('click', () => {
