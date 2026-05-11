@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WSC — Sport Vote</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f5f5;
+    --surface: #ffffff;
+    --surface2: #f0f0f0;
+    --border: #e0e0e0;
+    --text: #1a1a1a;
+    --muted: #777777;
+    --accent: #cc0000;
+    --red: #cc0000;
+    --green: #1a7a40;
+    --gold: #b8860b;
+    --silver: #7a8299;
+    --bronze: #8b5a2b;
+  }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  header {
+    background: #cc0000;
+    border-bottom: 3px solid #990000;
+    padding: 0 2rem;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    color: #fff;
+    text-decoration: none;
+  }
+
+  .logo span { color: rgba(255,255,255,0.7); }
+
+  .back-link {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .back-link:hover { color: #fff; }
+
+  main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  /* ── STEP INDICATOR ── */
+  .steps {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 2rem;
+    margin-top: 1.5rem;
+  }
+
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    flex: 1;
+  }
+
+  .step.active { color: var(--accent); }
+  .step.done { color: var(--green); }
+
+  .step-num {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid currentColor;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    flex-shrink: 0;
+  }
+
+  .step.done .step-num { background: var(--green); color: #fff; border-color: var(--green); }
+  .step.active .step-num { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .step-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+    margin: 0 8px;
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .card-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.25rem;
+  }
+
+  .card-sub {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 1.25rem;
+  }
+
+  /* ── NAME INPUT ── */
+  .name-input-wrap {
+    position: relative;
+  }
+
+  .name-input-wrap input {
+    width: 100%;
+    padding: 12px 14px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 1rem;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .name-input-wrap input:focus { border-color: var(--accent); }
+
+  .name-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0; right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    z-index: 50;
+    display: none;
+  }
+
+  .name-suggestions.open { display: block; }
+
+  .name-sug-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+
+  .name-sug-item:last-child { border-bottom: none; }
+  .name-sug-item:hover { background: var(--surface2); }
+
+  /* ── SPORT OPTION ── */
+  .sport-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 8px;
+  }
+
+  .sport-option {
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: border-color 0.15s, background 0.15s;
+    user-select: none;
+    background: var(--surface);
+  }
+
+  .sport-option:hover { border-color: #cc000066; background: rgba(204,0,0,0.03); }
+
+  .sport-option.selected {
+    border-color: var(--accent);
+    background: rgba(204,0,0,0.06);
+  }
+
+  .sport-option.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  .sport-option.disabled.selected {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .sport-checkbox {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .sport-option.selected .sport-checkbox {
+    border-color: var(--accent);
+    background: var(--accent);
+  }
+
+  .sport-checkbox::after {
+    content: '✓';
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    display: none;
+  }
+
+  .sport-option.selected .sport-checkbox::after { display: block; }
+
+  .sport-label { font-size: 0.88rem; font-weight: 500; }
+  .sport-size-tag {
+    font-size: 0.7rem;
+    color: var(--muted);
+    display: block;
+    margin-top: 1px;
+  }
+
+  /* Counter */
+  .counter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+  }
+
+  .counter-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .counter-badge {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 3px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .counter-badge.full { background: rgba(204,0,0,0.1); color: var(--accent); border-color: rgba(204,0,0,0.3); }
+  .counter-badge.done { background: rgba(26,122,64,0.1); color: var(--green); border-color: rgba(26,122,64,0.3); }
+
+  /* ── SUBMIT BUTTON ── */
+  .btn {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 12px 32px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+
+  .btn:active { transform: scale(0.98); }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--muted);
+    border: 1.5px solid var(--border);
+    margin-right: 0.5rem;
+  }
+
+  /* ── STATUS MESSAGES ── */
+  .status-msg {
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    margin-top: 1rem;
+    display: none;
+  }
+
+  .status-msg.error { background: rgba(204,0,0,0.08); border: 1px solid rgba(204,0,0,0.3); color: var(--red); }
+  .status-msg.success { background: rgba(26,122,64,0.08); border: 1px solid rgba(26,122,64,0.3); color: var(--green); }
+  .status-msg.info { background: rgba(0,80,160,0.06); border: 1px solid rgba(0,80,160,0.2); color: #0050a0; }
+
+  /* ── SUCCESS SCREEN ── */
+  #screen-success {
+    display: none;
+    text-align: center;
+    padding: 4rem 2rem;
+  }
+
+  .success-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  .success-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    color: var(--green);
+    margin-bottom: 0.5rem;
+  }
+
+  .success-sub { color: var(--muted); margin-bottom: 2rem; font-size: 0.95rem; }
+
+  .vote-summary {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+    text-align: left;
+    max-width: 480px;
+    margin: 0 auto 2rem;
+  }
+
+  .vote-summary h3 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+  }
+
+  .vote-cat {
+    margin-bottom: 0.75rem;
+  }
+
+  .vote-cat-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .vote-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+
+  .vote-chip {
+    background: rgba(204,0,0,0.08);
+    border: 1px solid rgba(204,0,0,0.25);
+    color: var(--accent);
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 3px;
+  }
+
+  /* Alert */
+  .alert-block {
+    border-left: 3px solid var(--accent);
+    background: rgba(204,0,0,0.06);
+    padding: 0.75rem 1rem;
+    border-radius: 0 6px 6px 0;
+    font-size: 0.84rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: -3px;
+    margin-right: 6px;
+    display: none;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="logo">W<span>SC</span></span>
+  <a class="back-link" href="wsc-league.html">← Back to main site</a>
+</header>
+
+<main>
+
+  <!-- Step Indicator -->
+  <div class="steps">
+    <div class="step active" id="step1-ind">
+      <div class="step-num">1</div>
+      <span>Your name</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step" id="step2-ind">
+      <div class="step-num">2</div>
+      <span>Cast votes</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step" id="step3-ind">
+      <div class="step-num">3</div>
+      <span>Confirm</span>
+    </div>
+  </div>
+
+  <!-- ── SCREEN 1: Name ── -->
+  <div id="screen-name">
+    <div class="card">
+      <div class="card-title">Who are you?</div>
+      <div class="card-sub">Enter your first name. If you've voted before, your previous selections will load and you can update them.</div>
+
+      <div class="name-input-wrap">
+        <input type="text" id="name-input" placeholder="Type your name..." autocomplete="off" />
+        <div class="name-suggestions" id="name-suggestions"></div>
+      </div>
+
+      <div class="status-msg" id="name-status"></div>
+
+      <div style="margin-top:1.25rem;display:flex;align-items:center;gap:0.5rem">
+        <button class="btn btn-primary" id="name-next-btn" disabled>Continue →</button>
+        <span id="returning-badge" style="font-size:0.8rem;color:var(--green);display:none">✓ Returning voter — your picks will load</span>
+      </div>
+    </div>
+
+    <div class="alert-block">
+      <strong>Note:</strong> Votes can be changed any time before voting closes — just re-enter your name to update your selections.
+    </div>
+  </div>
+
+  <!-- ── SCREEN 2: Vote ── -->
+  <div id="screen-vote" style="display:none">
+
+    <div class="card">
+      <div class="card-title">Team Sports</div>
+      <div class="card-sub">Pick exactly 4. These will be played as team events.</div>
+      <div class="counter">
+        <span class="counter-label">Team Sports</span>
+        <span class="counter-badge" id="count-team">0 / 4</span>
+      </div>
+      <div class="sport-grid" id="grid-team">
+        <div class="sport-option" data-cat="team" data-sport="Soccer">
+          <div class="sport-checkbox"></div>
+          <div><span class="sport-label">Soccer</span><span class="sport-size-tag">2v2 or 3v3</span></div>
+        </div>
+        <div class="sport-option" data-cat="team" data-sport="Basketball">
+          <div class="sport-checkbox"></div>
+          <div><span class="sport-label">Basketball</span><span class="sport-size-tag">2v2, 3v3, or 4v4</span></div>
+        </div>
+        <div class="sport-option" data-cat="team" data-sport="Spike Ball">
+          <div class="sport-checkbox"></div>
+          <div><span class="sport-label">Spike Ball</span><span class="sport-size-tag">2v2</span></div>
+        </div>
+        <div class="sport-option" data-cat="team" data-sport="Badminton">
+          <div class="sport-checkbox"></div>
+          <div><span class="sport-label">Badminton</span><span class="sport-size-tag">2v2</span></div>
+        </div>
+        <div class="sport-option" data-cat="team" data-sport="Volleyball">
+          <div class="sport-checkbox"></div>
+          <div><span class="sport-label">Volleyball</span><span class="sport-size-tag">2 per side</span></div>
+        </div>
+        <div class="sport-option" data-cat="team" data-sport="Pickleball">
+          <div class="sport-checkbox"></div>
+          <div><span class="sport-label">Pickleball</span><span class="sport-size-tag">2v2</span></div>
+        </div>
+        <div class="sport-option" data-cat="team" data-sport="Paddle Ball">
+          <div class="sport-checkbox"></div>
+          <div><span class="sport-label">Paddle Ball</span><span class="sport-size-tag">2v2</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Individual Sports</div>
+      <div class="card-sub">Pick exactly 3.</div>
+      <div class="counter">
+        <span class="counter-label">Individual Sports</span>
+        <span class="counter-badge" id="count-individual">0 / 3</span>
+      </div>
+      <div class="sport-grid" id="grid-individual">
+        <div class="sport-option" data-cat="individual" data-sport="Chess">
+          <div class="sport-checkbox"></div>
+          <div><span class="sport-label">Chess</span><span class="sport-size-tag">1v1</span></div>
+        </div>
+        <div class="sport-option" data-cat="individual" data-sport="Ping Pong">
+          <div class="sport-checkbox"></div>
+          <div><span class="sport-label">Ping Pong</span><span class="sport-size-tag">1v1 singles</span></div>
+        </div>
+        <div class="sport-option" data-cat="individual" data-sport="Swimming">
+          <div class="sport-checkbox"></div>
+          <div><span class="sport-label">Swimming</span><span class="sport-size-tag">Individual</span></div>
+        </div>
+        <div class="sport-option" data-cat="individual" data-sport="Track/XC">
+          <div class="sport-checkbox"></div>
+          <div><span class="sport-label">Track / XC</span><span class="sport-size-tag">Individual</span></div>
+        </div>
+        <div class="sport-option" data-cat="individual" data-sport="Bouldering">
+          <div class="sport-checkbox"></div>
+          <div><span class="sport-label">Bouldering</span><span class="sport-size-tag">Individual</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Combat / Physical</div>
+      <div class="card-sub">Pick exactly 1.</div>
+      <div class="counter">
+        <span class="counter-label">Combat</span>
+        <span class="counter-badge" id="count-combat">0 / 1</span>
+      </div>
+      <div class="sport-grid" id="grid-combat">
+        <div class="sport-option" data-cat="combat" data-sport="Boxing">
+          <div class="sport-checkbox"></div>
+          <div><span class="sport-label">Boxing</span><span class="sport-size-tag">1v1 w/ gear</span></div>
+        </div>
+        <div class="sport-option" data-cat="combat" data-sport="Football (Tackle)">
+          <div class="sport-checkbox"></div>
+          <div><span class="sport-label">Football (Tackle)</span><span class="sport-size-tag">4v4</span></div>
+        </div>
+        <div class="sport-option" data-cat="combat" data-sport="Wrestling">
+          <div class="sport-checkbox"></div>
+          <div><span class="sport-label">Wrestling</span><span class="sport-size-tag">1v1</span></div>
+        </div>
+        <div class="sport-option" data-cat="combat" data-sport="MMA">
+          <div class="sport-checkbox"></div>
+          <div><span class="sport-label">MMA</span><span class="sport-size-tag">1v1 w/ gear</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">eSports</div>
+      <div class="card-sub">Pick exactly 2. Team captains are highest peak-ranked players (last 6 months).</div>
+      <div class="counter">
+        <span class="counter-label">eSports</span>
+        <span class="counter-badge" id="count-esports">0 / 2</span>
+      </div>
+      <div class="sport-grid" id="grid-esports">
+        <div class="sport-option" data-cat="esports" data-sport="Rocket League">
+          <div class="sport-checkbox"></div>
+          <div><span class="sport-label">Rocket League</span><span class="sport-size-tag">2v2 or 3v3</span></div>
+        </div>
+        <div class="sport-option" data-cat="esports" data-sport="Valorant">
+          <div class="sport-checkbox"></div>
+          <div><span class="sport-label">Valorant</span><span class="sport-size-tag">Even split</span></div>
+        </div>
+        <div class="sport-option" data-cat="esports" data-sport="Rainbow Six Siege">
+          <div class="sport-checkbox"></div>
+          <div><span class="sport-label">Rainbow Six Siege</span><span class="sport-size-tag">Even split</span></div>
+        </div>
+        <div class="sport-option" data-cat="esports" data-sport="Fortnite">
+          <div class="sport-checkbox"></div>
+          <div><span class="sport-label">Fortnite</span><span class="sport-size-tag">Even split or solo</span></div>
+        </div>
+        <div class="sport-option" data-cat="esports" data-sport="GeoGuessr">
+          <div class="sport-checkbox"></div>
+          <div><span class="sport-label">GeoGuessr</span><span class="sport-size-tag">Solo</span></div>
+        </div>
+        <div class="sport-option" data-cat="esports" data-sport="Minecraft Mini Games">
+          <div class="sport-checkbox"></div>
+          <div><span class="sport-label">Minecraft Mini Games</span><span class="sport-size-tag">2–4 per team</span></div>
+        </div>
+        <div class="sport-option" data-cat="esports" data-sport="F1">
+          <div class="sport-checkbox"></div>
+          <div><span class="sport-label">F1</span><span class="sport-size-tag">Solo or 2</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:2rem">
+      <button class="btn btn-secondary" onclick="goBack()">← Back</button>
+      <button class="btn btn-primary" id="submit-btn" disabled>
+        <span class="spinner" id="submit-spinner"></span>
+        Submit Vote
+      </button>
+    </div>
+
+    <div class="status-msg" id="submit-status"></div>
+  </div>
+
+  <!-- ── SCREEN 3: Success ── -->
+  <div id="screen-success">
+    <div class="success-icon">🏆</div>
+    <div class="success-title">Vote Submitted!</div>
+    <div class="success-sub" id="success-sub">Your selections have been recorded.</div>
+
+    <div class="vote-summary" id="vote-summary"></div>
+
+    <button class="btn btn-secondary" onclick="resetForm()" style="margin-right:0.5rem">Change my vote</button>
+    <a href="wsc-league.html" class="btn btn-primary" style="text-decoration:none;display:inline-block">Back to WSC →</a>
+  </div>
+
+</main>
+
+<script>
+// ═══════════════════════════════════════════════
+//   CONFIG — PASTE YOUR APPS SCRIPT URL HERE
+// ═══════════════════════════════════════════════
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbzogz6cZaokP75YedCHrNR0Ee0VASE65SSeIYQtQycj4icFINwPrTPjOooCGihkzEhk/exec";
+// ═══════════════════════════════════════════════
+
+const VALID_NAMES = [
+  "Brandon","Daniel","Ethan","Hyeshil","Ishaan",
+  "Koray","Manav","Marty","Maxx","Sunil","TJ","Wyatt","Pavel"
+];
+
+const LIMITS = { team: 4, individual: 3, combat: 1, esports: 2 };
+
+let currentName = "";
+let selections = { team: [], individual: [], combat: [], esports: [] };
+
+// ── NAME SCREEN ──
+const nameInput = document.getElementById('name-input');
+const nameSuggestions = document.getElementById('name-suggestions');
+const nameNextBtn = document.getElementById('name-next-btn');
+const returningBadge = document.getElementById('returning-badge');
+
+nameInput.addEventListener('input', () => {
+  const val = nameInput.value.trim();
+  const matches = VALID_NAMES.filter(n => n.toLowerCase().startsWith(val.toLowerCase()));
+  if (val.length > 0 && matches.length > 0) {
+    nameSuggestions.innerHTML = matches.map(m =>
+      `<div class="name-sug-item" onclick="selectName('${m}')">${m}</div>`
+    ).join('');
+    nameSuggestions.classList.add('open');
+  } else {
+    nameSuggestions.classList.remove('open');
+  }
+  const exactMatch = VALID_NAMES.find(n => n.toLowerCase() === val.toLowerCase());
+  nameNextBtn.disabled = !exactMatch;
+  if (exactMatch) currentName = exactMatch;
+  returningBadge.style.display = 'none';
+});
+
+nameInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !nameNextBtn.disabled) nameNextBtn.click();
+});
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.name-input-wrap')) nameSuggestions.classList.remove('open');
+});
+
+function selectName(name) {
+  nameInput.value = name;
+  nameSuggestions.classList.remove('open');
+  nameNextBtn.disabled = false;
+  currentName = name;
+  checkReturning(name);
+}
+
+async function checkReturning(name) {
+  if (SHEET_URL === "PASTE_YOUR_APPS_SCRIPT_URL_HERE") return;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    const res = await fetch(`${SHEET_URL}?action=get&name=${encodeURIComponent(name)}`, { signal: controller.signal });
+    clearTimeout(timeout);
+    const text = await res.text();
+    const data = JSON.parse(text);
+    if (data && data.team && data.team.length > 0 && data.team[0] !== "") {
+      selections = data;
+      returningBadge.style.display = 'inline';
+    }
+  } catch(e) {
+    // Silently fail — user can still vote fresh
+  }
+}
+
+nameNextBtn.addEventListener('click', () => {
+  const val = VALID_NAMES.find(n => n.toLowerCase() === nameInput.value.trim().toLowerCase());
+  if (!val) { showMsg('name-status', 'error', 'Please enter a valid name from the group.'); return; }
+  currentName = val;
+  goToVote();
+});
+
+function goToVote() {
+  document.getElementById('screen-name').style.display = 'none';
+  document.getElementById('screen-vote').style.display = 'block';
+  setStep(2);
+  renderSelections();
+  updateAllCounters();
+}
+
+function goBack() {
+  document.getElementById('screen-vote').style.display = 'none';
+  document.getElementById('screen-name').style.display = 'block';
+  setStep(1);
+}
+
+// ── SPORT SELECTION ──
+document.querySelectorAll('.sport-option').forEach(opt => {
+  opt.addEventListener('click', () => {
+    const cat = opt.dataset.cat;
+    const sport = opt.dataset.sport;
+    const limit = LIMITS[cat];
+    const already = selections[cat].includes(sport);
+
+    if (already) {
+      selections[cat] = selections[cat].filter(s => s !== sport);
+      opt.classList.remove('selected');
+    } else {
+      if (selections[cat].length >= limit) return;
+      selections[cat].push(sport);
+      opt.classList.add('selected');
+    }
+    updateCounter(cat);
+    updateDisabled(cat);
+    updateSubmitBtn();
+  });
+});
+
+function renderSelections() {
+  document.querySelectorAll('.sport-option').forEach(opt => {
+    const cat = opt.dataset.cat;
+    const sport = opt.dataset.sport;
+    opt.classList.toggle('selected', selections[cat].includes(sport));
+  });
+  ['team','individual','combat','esports'].forEach(cat => {
+    updateCounter(cat);
+    updateDisabled(cat);
+  });
+  updateSubmitBtn();
+}
+
+function updateCounter(cat) {
+  const el = document.getElementById(`count-${cat}`);
+  const count = selections[cat].length;
+  const limit = LIMITS[cat];
+  el.textContent = `${count} / ${limit}`;
+  el.className = 'counter-badge' + (count === limit ? ' done' : count > 0 ? '' : '');
+}
+
+function updateAllCounters() {
+  ['team','individual','combat','esports'].forEach(updateCounter);
+}
+
+function updateDisabled(cat) {
+  const limit = LIMITS[cat];
+  document.querySelectorAll(`.sport-option[data-cat="${cat}"]`).forEach(opt => {
+    const full = selections[cat].length >= limit;
+    const sel = opt.classList.contains('selected');
+    opt.classList.toggle('disabled', full && !sel);
+  });
+}
+
+function updateSubmitBtn() {
+  const allFull = Object.keys(LIMITS).every(cat => selections[cat].length === LIMITS[cat]);
+  document.getElementById('submit-btn').disabled = !allFull;
+}
+
+// ── SUBMIT ──
+document.getElementById('submit-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('submit-btn');
+  const spinner = document.getElementById('submit-spinner');
+  btn.disabled = true;
+  spinner.style.display = 'inline-block';
+
+  if (SHEET_URL === "PASTE_YOUR_APPS_SCRIPT_URL_HERE") {
+    setTimeout(() => { spinner.style.display = 'none'; showSuccess(); }, 800);
+    return;
+  }
+
+  try {
+    const params = new URLSearchParams({
+      action: 'submit',
+      name: currentName,
+      team: selections.team.join(','),
+      individual: selections.individual.join(','),
+      combat: selections.combat.join(','),
+      esports: selections.esports.join(',')
+    });
+    await fetch(`${SHEET_URL}?${params.toString()}`, { mode: 'no-cors' });
+    spinner.style.display = 'none';
+    showSuccess();
+  } catch(e) {
+    spinner.style.display = 'none';
+    btn.disabled = false;
+    showMsg('submit-status', 'error', 'Could not reach the server. Check your connection.');
+  }
+});
+
+function showSuccess() {
+  document.getElementById('screen-vote').style.display = 'none';
+  document.getElementById('screen-success').style.display = 'block';
+  setStep(3);
+
+  const sub = document.getElementById('success-sub');
+  sub.textContent = `Thanks, ${currentName}! Your vote has been recorded.`;
+
+  const catLabels = { team: 'Team Sports', individual: 'Individual Sports', combat: 'Combat / Physical', esports: 'eSports' };
+  let html = '<h3>Your selections</h3>';
+  for (const [cat, sports] of Object.entries(selections)) {
+    if (sports.length === 0) continue;
+    html += `<div class="vote-cat">
+      <div class="vote-cat-label">${catLabels[cat]}</div>
+      <div class="vote-chips">${sports.map(s => `<span class="vote-chip">${s}</span>`).join('')}</div>
+    </div>`;
+  }
+  document.getElementById('vote-summary').innerHTML = html;
+}
+
+function resetForm() {
+  selections = { team: [], individual: [], combat: [], esports: [] };
+  nameInput.value = '';
+  nameNextBtn.disabled = true;
+  returningBadge.style.display = 'none';
+  document.getElementById('screen-success').style.display = 'none';
+  document.getElementById('screen-name').style.display = 'block';
+  setStep(1);
+}
+
+function setStep(n) {
+  [1,2,3].forEach(i => {
+    const el = document.getElementById(`step${i}-ind`);
+    el.className = 'step' + (i < n ? ' done' : i === n ? ' active' : '');
+  });
+}
+
+function showMsg(id, type, text) {
+  const el = document.getElementById(id);
+  el.className = `status-msg ${type}`;
+  el.textContent = text;
+  el.style.display = 'block';
+}
+</script>
+</body>
+</html>
